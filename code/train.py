@@ -40,7 +40,7 @@ def train():
   # setting model hyperparameter
   bert_config = BertConfig.from_pretrained(MODEL_NAME)
   bert_config.num_labels = 42
-  model = BertForSequenceClassification(bert_config) 
+  model = BertForSequenceClassification.from_pretrained(MODEL_NAME, config=bert_config) 
   model.parameters
   model.to(device)
   
