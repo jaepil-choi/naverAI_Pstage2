@@ -1,15 +1,16 @@
 import pickle as pickle
 import os
 import pandas as pd
+import numpy as np
 import torch
 
 # Dataset 구성.
 class RE_Dataset(torch.utils.data.Dataset):
-  def __init__(self, tokenized_dataset, labels):
+  def __init__(self, tokenized_dataset: pd.DataFrame, labels: np.ndarray):
     self.tokenized_dataset = tokenized_dataset
     self.labels = labels
 
-  def __getitem__(self, idx):
+  def __getitem__(self, idx: int) -> dict:
     item = {key: torch.tensor(val[idx]) for key, val in self.tokenized_dataset.items()}
     item['labels'] = torch.tensor(self.labels[idx])
     return item
@@ -19,7 +20,7 @@ class RE_Dataset(torch.utils.data.Dataset):
 
 # 처음 불러온 tsv 파일을 원하는 형태의 DataFrame으로 변경 시켜줍니다.
 # 변경한 DataFrame 형태는 baseline code description 이미지를 참고해주세요.
-def preprocessing_dataset(dataset, label_type):
+def preprocessing_dataset(dataset: pd.DataFrame, label_type: dict) -> pd.DataFrame:
   label = []
   for i in dataset[8]:
     if i == 'blind':
@@ -30,7 +31,7 @@ def preprocessing_dataset(dataset, label_type):
   return out_dataset
 
 # tsv 파일을 불러옵니다.
-def load_data(dataset_dir):
+def load_data(dataset_dir: str) -> pd.DataFrame:
   # load label_type, classes
   with open('/opt/ml/input/data/label_type.pkl', 'rb') as f:
     label_type = pickle.load(f)
@@ -44,15 +45,15 @@ def load_data(dataset_dir):
 # bert input을 위한 tokenizing.
 # tip! 다양한 종류의 tokenizer와 special token들을 활용하는 것으로도 새로운 시도를 해볼 수 있습니다.
 # baseline code에서는 2가지 부분을 활용했습니다.
-def tokenized_dataset(dataset, tokenizer):
+def tokenized_dataset(dataset: pd.DataFrame, tokenizer: 'AutoTokenizer') -> 'BatchEncoding':
   concat_entity = []
   for e01, e02 in zip(dataset['entity_01'], dataset['entity_02']):
     temp = ''
     temp = e01 + '[SEP]' + e02
     concat_entity.append(temp)
   tokenized_sentences = tokenizer(
-      concat_entity,
-      list(dataset['sentence']),
+      text=concat_entity,
+      text_pair=list(dataset['sentence']),
       return_tensors="pt",
       padding=True,
       truncation=True,
