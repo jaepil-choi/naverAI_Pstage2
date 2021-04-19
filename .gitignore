@@ -151,6 +151,7 @@ pyvenv.cfg
 pip-selfcheck.json
 
 .vscode/*
+.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -171,5 +172,6 @@ pip-selfcheck.json
 .wget-hsts
 .profile
 
-## Data Files are not ignored (small size)
-
+## Data Files are not ignored (small size), but submission files & results are ignored
+submission*.csv
+results/
