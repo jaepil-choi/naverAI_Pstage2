@@ -5,6 +5,7 @@ import torch
 from sklearn.metrics import accuracy_score
 from transformers import AutoTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, BertConfig
 from load_data import *
+from pathlib import Path
 
 # 평가를 위한 metrics function.
 def compute_metrics(pred):
@@ -28,7 +29,7 @@ def train():
   #dev_label = dev_dataset['label'].values
   
   # tokenizing dataset
-  tokenized_train = tokenized_dataset(train_dataset, tokenizer)
+  tokenized_train = tokenized_dataset(train_dataset, tokenizer) # keys: input_ids, token_type_ids, attention_mask
   #tokenized_dev = tokenized_dataset(dev_dataset, tokenizer)
 
   # make dataset for pytorch.
@@ -43,7 +44,7 @@ def train():
   model = BertForSequenceClassification.from_pretrained(MODEL_NAME, config=bert_config) 
   model.parameters
   model.to(device)
-  
+
   # 사용한 option 외에도 다양한 option들이 있습니다.
   # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
   training_args = TrainingArguments(
@@ -63,6 +64,8 @@ def train():
                                 # `steps`: Evaluate every `eval_steps`.
                                 # `epoch`: Evaluate every end of epoch.
     #eval_steps = 500,            # evaluation step.
+
+    save_strategy='epoch'
   )
   trainer = Trainer(
     model=model,                         # the instantiated 🤗 Transformers model to be trained
@@ -74,6 +77,12 @@ def train():
 
   # train model
   trainer.train()
+
+  # Save model
+  model_path = Path('.').resolve() / 'path'
+  model_path.mkdir(parents=True, exist_ok=True)
+  trainer.save_model([model_path])
+  trainer.save_state()
 
 def main():
   train()
