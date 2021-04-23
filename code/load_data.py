@@ -50,14 +50,16 @@ def tokenized_dataset(dataset: pd.DataFrame, tokenizer: 'AutoTokenizer') -> 'Bat
   for e01, e02 in zip(dataset['entity_01'], dataset['entity_02']):
     temp = ''
     temp = e01 + '[SEP]' + e02
-    concat_entity.append(temp)
+    concat_entity.append(temp) # [('기아자동차', 'K5'), ...]
   tokenized_sentences = tokenizer(
       text=concat_entity,
       text_pair=list(dataset['sentence']),
       return_tensors="pt",
       padding=True,
-      truncation=True,
+      truncation='only_second', # tokenizer의 concat entity, dataset 리스트가 들어가는데, max len을 넘어가면 "앞에서부터" 자르기 때문에 entity가 짤림. 
       max_length=100,
       add_special_tokens=True,
+
+      # return_token_type_ids=True, # Roberta large 돌릴 때는 이거 없으면 token_type_ids 없다고 한다. 근데 이거 추가하면 시간 엄청 길어짐. 
       )
   return tokenized_sentences
